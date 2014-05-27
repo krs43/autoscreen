@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Diagnostics;
+using System.Threading;
 using System.Windows.Forms;
 using System.Collections.Generic;
 
@@ -19,14 +20,12 @@ namespace autoscreen
         [STAThread]
         public static void Main(string[] args)
         {
-            // Kill this application's duplicate process in case the user executes a second instance since we want to keep a single instance.
-            if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location)).Length > 1)
+            var appGuid = "8E34A5BB-7381-45F5-BCEE-EF64174C2B75";
+            using (var mutex = new Mutex(false, appGuid))
             {
-                Process.GetCurrentProcess().Kill();
-            }
-            else
-            {
-                // Make sure we're running on Windows Vista or higher.
+                if (!mutex.WaitOne(0, false))
+                    return;
+
                 if (Environment.OSVersion.Version.Major >= 6)
                 {
                     Application.EnableVisualStyles();
